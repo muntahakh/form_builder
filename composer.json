@@ -1,0 +1,17 @@
+{
+    "name" : "muntaha/form-builder",
+    "description": "A form builder that reduces field boilerplate.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Muntaha\\FormBuilder\\" : "src/"
+        }
+    },
+    "extra": {
+        "laravel" : {
+            "providers" : [
+                "Muntaha\\FormBuilder\\FormBuilderServiceProvider"
+            ]
+        }
+    }
+}
