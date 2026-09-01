@@ -6,16 +6,13 @@ use Muntaha\FormBuilder\Form\Form;
 
 class FormManager
 {
-    protected Form $form;
-
-    public function __construct(Form $form)
+    public function create(): Form
     {
-        $this->form = $form;
+        return app(Form::class);
     }
 
-    public function __call(string $methods, array $arguments): mixed
+    public function make(string $class, array $arguments = []): object
     {
-        return $this->form->$methods(...$arguments);
+        return app($class, $arguments);
     }
-
 }

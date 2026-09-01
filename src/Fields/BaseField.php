@@ -2,48 +2,78 @@
 
 namespace Muntaha\FormBuilder\Fields;
 
+use Muntaha\FormBuilder\Traits\HasAttributes;
+
 abstract class BaseField
 {
-    // identity
+    use HasAttributes;
+
+    protected string $tag_name;
     protected string $name;
-    protected ?string $id = null;
     protected mixed $value = null;
 
-    // label
     protected ?string $label = null;
-    protected array $labelAttributes = [];
+    protected array $label_attributes = [];
 
-    // state
-    protected bool $required = false;
-    protected bool $disabled = false;
-    protected bool $readonly = false;
-    protected bool $autofocus = false;
+    protected ?string $help_text = null;
+    protected array $help_text_attributes = [];
 
-    // user experience
-    protected ?string $placeholder = null;
-    protected ?string $autocomplete = null;
-    protected ?string $title = null;
-
-    // validation state
-    protected ?int $minLength = null;
-    protected ?int $maxLength = null;
-    protected ?string $pattern = null;
-
-    // help / errors
-    protected ?string $helpText = null;
-    protected array $helpTextAttributes = [];
     protected ?string $error = null;
-    protected array $errorAttributes = [];
+    protected array $error_attributes = [];
 
-    // customization
-    protected array $attributes = [];
-
-    public function __construct(string $name)
+    public function __construct(string $tag_name, string $name)
     {
+        $this->tag_name = $tag_name;
         $this->name = $name;
-        $this->id = $name;
-        $this->label = ucfirst($name);
-        $this->placeholder = ucfirst($name);
+
+        $this->attributes = [
+            'id' => $name,
+            'placeholder' => ucfirst($name),
+        ];
+    }
+
+    /**
+     *  SETTERS
+     */
+
+    public function value(mixed $value): static
+    {
+        $this->value = $value;
+
+        return $this;
+    }
+
+    public function label(string $text = "", array $attributes = []): static
+    {
+        $this->label = $text;
+        $this->label_attributes = $attributes;
+
+        return $this;
+    }
+
+    public function helpText(string $help_text, array $attributes = []): static
+    {
+        $this->help_text = $help_text;
+        $this->help_text_attributes = $attributes;
+
+        return $this;
+    }
+
+    public function error(string $error, array $attributes = []): static
+    {
+        $this->error = $error;
+        $this->error_attributes = $attributes;
+
+        return $this;
+    }
+
+    /**
+     *  GETTERS
+     */
+
+    public function getTagName(): string
+    {
+        return $this->tag_name;
     }
 
     public function getName(): string
@@ -51,147 +81,38 @@ abstract class BaseField
         return $this->name;
     }
 
-    public function id (string $id): static
+    public function getValue(): mixed
     {
-        $this->id = $id;
-        return $this;
+        return $this->value;
     }
 
-    public function value (mixed $value): static
+    public function getLabel(): ?string
     {
-        $this->value = $value;
-        return $this;
+        return $this->label;
     }
 
-    public function label (string $text = "", array $attributes = []): static
+    public function getLabelAttributes(): array
     {
-        $this->label = $text;
-        $this->labelAttributes = $attributes;
-        return $this;
+        return $this->label_attributes;
     }
 
-    public function required (bool $required = true): static
+    public function getHelpText(): ?string
     {
-        $this->required = $required;
-        return $this;
+        return $this->help_text;
     }
 
-    public function disabled (bool $disabled = true): static
+    public function getHelpTextAttributes(): array
     {
-        $this->disabled = $disabled;
-        return $this;
+        return $this->help_text_attributes;
     }
 
-    public function readonly (bool $readonly = true): static
+    public function getError(): ?string
     {
-        $this->readonly = $readonly;
-        return $this;
+        return $this->error;
     }
 
-    public function autofocus (bool $autofocus = true): static
+    public function getErrorAttributes(): array
     {
-        $this->autofocus = $autofocus;
-        return $this;
-    }
-
-    public function placeholder (string $placeholder): static
-    {
-        $this->placeholder = $placeholder;
-        return $this;
-    }
-
-    public function autocomplete (string $autocomplete): static
-    {
-        $this->autocomplete = $autocomplete;
-        return $this;
-    }
-
-    public function title (string $title): static
-    {
-        $this->title = $title;
-        return $this;
-    }
-
-    public function minLength (int $length): static
-    {
-        $this->minLength = $length;
-        return $this;
-    }
-
-    public function maxLength (int $length): static
-    {
-        $this->maxLength = $length;
-        return $this;
-    }
-
-    public function pattern (string $pattern): static
-    {
-        $this->pattern = $pattern;
-        return $this;
-    }
-
-    public function helpText (string $helpText, array $helpTextAttributes = []): static
-    {
-        $this->helpText = $helpText;
-        $this->helpTextAttributes = $helpTextAttributes;
-        return $this;
-    }
-
-    public function error (string $error, array $errorAttributes = []): static
-    {
-        $this->error = $error;
-        $this->errorAttributes = $errorAttributes;
-        return $this;
-    }
-
-    public function class (string $class): static
-    {
-        $this->attributes['class'] = $class;
-        return $this;
-    }
-
-    public function attribute (array $attributes): static
-    {
-        $this->attributes = array_merge($this->attributes, $attributes);
-        return $this;
-    }
-
-    public function getState(): array
-    {
-        return [
-            // identity
-            'name' => $this->name,
-            'id' => $this->id,
-            'value' => $this->value,
-
-            // label
-            'label' => $this->label,
-            'labelAttributes' => $this->labelAttributes,
-
-            // state
-            'required' => $this->required,
-            'disabled' => $this->disabled,
-            'readonly' => $this->readonly,
-            'autofocus' => $this->autofocus,
-
-            // user experience
-            'placeholder' => $this->placeholder,
-            'autocomplete' => $this->autocomplete,
-            'title' => $this->title,
-
-            // validation
-            'minLength' => $this->minLength,
-            'maxLength' => $this->maxLength,
-            'pattern' => $this->pattern,
-
-            // help / errors
-            'helpText' => $this->helpText,
-            'helpTextAttributes' => $this->helpTextAttributes,
-            'error' => $this->error,
-            'errorAttributes' => $this->errorAttributes,
-
-            // customization
-            'attributes' => $this->attributes,
-        ];
+        return $this->error_attributes;
     }
 }

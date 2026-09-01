@@ -2,19 +2,23 @@
 
 namespace Muntaha\FormBuilder\Form;
 
+use Illuminate\Support\Traits\Macroable;
 use Muntaha\FormBuilder\Button\Button;
 use Muntaha\FormBuilder\Fields\BaseField;
-use Muntaha\FormBuilder\Fields\NumberField;
-use Muntaha\FormBuilder\Fields\TextField;
 use Muntaha\FormBuilder\Services\ThemeManager;
+use Muntaha\FormBuilder\Traits\HasAttributes;
 
 class Form
 {
-    protected ?string $id = null;
+    use Macroable, HasAttributes {
+        Macroable::__call insteadof HasAttributes;
+        HasAttributes::__call as attributeCall;
+        Macroable::__call as macroCall;
+    }
+
     protected ?string $method = null;
     protected ?string $action = null;
     protected ?string $enctype = null;
-    protected array $attributes = [];
 
     protected array $fields = [];
     protected array $buttons = [];
@@ -23,11 +27,18 @@ class Form
     protected array $errors = [];
     protected bool $submitted = false;
 
-    public function id (int $id): static
+    public function __call($method, $parameters)
     {
-        $this->attributes['id'] = $id;
-        return $this;
+        if (static::hasMacro($method)) {
+            return $this->macroCall($method, $parameters);
+        }
+
+        return $this->attributeCall($method, $parameters);
     }
+
+    /**
+     *  SETTERS
+     */
 
     public function method (string $method): static
     {
@@ -47,79 +58,56 @@ class Form
         return $this;
     }
 
-    public function class (string $class): static
-    {
-        $this->attributes['class'] = $class;
-        return $this;
-    }
+    /**
+     *  FIELDS CREATION
+     */
 
-    public function target (string $target): static
+    public function addField(BaseField $field): static
     {
-        $this->attributes['target'] = $target;
-        return $this;
-    }
-
-    public function attribute (array $attributes): static
-    {
-        $this->attributes = array_merge($this->attributes, $attributes);
-        return $this;
-    }
-
-    // Fields Creation
-    public function text (string $name = ""): TextField
-    {
-        return $this->createField(TextField::class, $name);
-    }
-
-    public function number (string $name = ""): NumberField
-    {
-        return $this->createField(NumberField::class, $name);
-    }
-
-    public function submit (): Button
-    {
-        return $this->createButton('submit');
-    }
-
-    public function reset (): Button
-    {
-        return $this->createButton('reset');
-    }
-
-    // Helper Functions
-    protected function createField (string $class , string $name = ""): BaseField
-    {
-        $field = app($class, [
-            'name' => $name,
-        ]);
-
         $this->fields[] = $field;
 
-        return $field;
+        return $this;
     }
 
-    protected function createButton (string $type) : Button
+    public function addButton(Button $button): static
     {
-        $button = app(Button::class, [
-            'type' => $type,
-        ]);
-
         $this->buttons[] = $button;
 
-        return $button;
+        return $this;
     }
 
-    public function getState(): array
+    /**
+     *  GETTERS
+     */
+
+    public function getMethod(): ?string
     {
-        return [
-            'method' => $this->method,
-            'action' => $this->action,
-            'enctype' => $this->enctype,
-            'attributes' => $this->attributes,
-            'fields' => $this->fields,
-            'buttons' => $this->buttons,
-        ];
+        return $this->method;
     }
+
+    public function getAction(): ?string
+    {
+        return $this->action;
+    }
+
+    public function getEnctype(): ?string
+    {
+        return $this->enctype;
+    }
+
+    public function getFields(): array
+    {
+        return $this->fields;
+    }
+
+    public function getButtons(): array
+    {
+        return $this->buttons;
+    }
+
+    /**
+     *  RENDER FORM
+     */
 
     public function render (string $theme)
     {
